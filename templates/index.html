@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Explorer</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar or Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="brand">
+                    <div class="brand-logo">
+                        <i class="fa-solid fa-database database-icon"></i>
+                        <span class="logo-dot"></span>
+                    </div>
+                    <div class="brand-text">
+                        <h1>BigQuery</h1>
+                        <span class="sub-title">Release Notes Explorer</span>
+                    </div>
+                </div>
+                
+                <div class="theme-switch-wrapper">
+                    <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Mode">
+                        <i class="fa-solid fa-moon moon-icon"></i>
+                        <i class="fa-solid fa-sun sun-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Search and Filter Panel -->
+            <section class="controls-panel card-glass">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search release notes (e.g. JSON, ML, Performance)..." autocomplete="off">
+                    <button id="clear-search" class="clear-btn" style="display: none;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="filter-options">
+                    <div class="filter-group">
+                        <span class="filter-label">Filter by Category:</span>
+                        <div class="filter-tags" id="category-filters">
+                            <button class="filter-tag active" data-type="all">All Updates</button>
+                            <button class="filter-tag" data-type="feature"><span class="dot dot-feature"></span>Features</button>
+                            <button class="filter-tag" data-type="change"><span class="dot dot-change"></span>Changes</button>
+                            <button class="filter-tag" data-type="deprecation"><span class="dot dot-deprecation"></span>Deprecations</button>
+                            <button class="filter-tag" data-type="fix"><span class="dot dot-fix"></span>Fixes</button>
+                        </div>
+                    </div>
+                    
+                    <div class="info-meta">
+                        <span class="feed-status" id="feed-status">
+                            <span class="pulse-indicator"></span> Loading feed...
+                        </span>
+                        <button id="refresh-btn" class="refresh-btn" title="Refresh release notes">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results summary -->
+            <div class="results-meta" id="results-meta" style="display: none;">
+                <span id="results-count">Showing 0 updates</span>
+                <span class="divider">|</span>
+                <button id="reset-all-filters" class="link-btn">Clear all filters</button>
+            </div>
+
+            <!-- Loader -->
+            <div class="loader-container" id="loader">
+                <div class="spinner">
+                    <div class="double-bounce1"></div>
+                    <div class="double-bounce2"></div>
+                </div>
+                <p>Fetching the latest BigQuery updates...</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="error-container card-glass" id="error-container" style="display: none;">
+                <i class="fa-solid fa-triangle-exclamation error-icon"></i>
+                <h3>Unable to load release notes</h3>
+                <p id="error-message">Something went wrong while fetching the feed from Google Cloud.</p>
+                <button id="retry-btn" class="btn-primary">Try Again</button>
+            </div>
+
+            <!-- Release Notes List -->
+            <section class="releases-list" id="releases-container">
+                <!-- Cards injected by JS -->
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Data fetched from <a href="https://docs.cloud.google.com/feeds/bigquery-release-notes.xml" target="_blank" rel="noopener noreferrer">Google Cloud BigQuery Release Notes RSS Feed <i class="fa-solid fa-arrow-up-right-from-square"></i></a></p>
+            <p class="copyright">&copy; 2026 BigQuery Release Notes Explorer</p>
+        </footer>
+    </div>
+
+    <!-- Main application JS -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
