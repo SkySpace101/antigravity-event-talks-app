@@ -412,6 +412,27 @@ body.light-theme .filter-tag {
     background: var(--primary-glow);
 }
 
+.export-btn {
+    background: none;
+    border: 1px solid var(--card-border);
+    color: var(--text-secondary);
+    padding: 0.4rem 0.9rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: var(--transition-smooth);
+}
+
+.export-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--color-fix);
+    background: rgba(16, 185, 129, 0.12);
+}
+
 .refresh-btn i.spinning {
     animation: spin 1s linear infinite;
 }
@@ -578,6 +599,45 @@ body.light-theme .filter-tag {
     gap: 1rem;
     margin-bottom: 1rem;
     flex-wrap: wrap;
+}
+
+.card-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.copy-card-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: var(--transition-fast);
+}
+
+body.light-theme .copy-card-btn {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.copy-card-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--primary);
+    background: var(--primary-glow);
+    transform: translateY(-1px);
+}
+
+.copy-card-btn.copied {
+    border-color: var(--color-fix) !important;
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: var(--color-fix) !important;
 }
 
 .card-title-area {

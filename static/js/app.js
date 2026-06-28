@@ -32,6 +32,7 @@ const retryBtn = document.getElementById('retry-btn');
 const releasesContainer = document.getElementById('releases-container');
 const refreshBtn = document.getElementById('refresh-btn');
 const feedStatus = document.getElementById('feed-status');
+const exportCsvBtn = document.getElementById('export-csv-btn');
 
 // Init application
 document.addEventListener('DOMContentLoaded', () => {
@@ -294,8 +295,13 @@ function renderReleases() {
                     </div>
                     <h2>${cardTitle}</h2>
                 </div>
-                <div class="card-badges">
-                    ${badgesHtml}
+                <div class="card-header-right">
+                    <div class="card-badges">
+                        ${badgesHtml}
+                    </div>
+                    <button class="copy-card-btn" title="Copy release notes for this day">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
                 </div>
             </div>
             <div class="release-card-body">
@@ -358,12 +364,85 @@ function tweetUpdate(date, type, text) {
     window.open(twitterUrl, '_blank', 'width=550,height=420,scrollbars=yes,resizable=yes');
 }
 
+// Export current filtered results to CSV
+function exportToCSV() {
+    const csvRows = [];
+    
+    // CSV Header with BOM prefix
+    csvRows.push(['Date', 'Release Title', 'Update Type', 'Description', 'Link'].map(val => `"${val.replace(/"/g, '""')}"`).join(','));
+    
+    allReleases.forEach(release => {
+        // Filter updates by category
+        let filteredUpdates = release.updates;
+        if (activeCategory !== 'all') {
+            filteredUpdates = release.updates.filter(up => {
+                const meta = getTypeMeta(up.type);
+                return meta.filterType === activeCategory;
+            });
+        }
+        
+        // Filter updates by search query
+        if (searchQuery) {
+            filteredUpdates = filteredUpdates.filter(up => {
+                const textContent = stripHtml(up.html).toLowerCase();
+                const titleMatch = release.title.toLowerCase().includes(searchQuery);
+                const contentMatch = textContent.includes(searchQuery);
+                const typeMatch = up.type.toLowerCase().includes(searchQuery);
+                return titleMatch || contentMatch || typeMatch;
+            });
+        }
+        
+        if (filteredUpdates.length === 0) return;
+        
+        filteredUpdates.forEach(up => {
+            const meta = getTypeMeta(up.type);
+            const plainText = stripHtml(up.html).replace(/\s+/g, ' ').trim();
+            const row = [
+                release.formattedDate,
+                release.title,
+                meta.label,
+                plainText,
+                release.id
+            ];
+            const escapedRow = row.map(val => `"${val.replace(/"/g, '""')}"`);
+            csvRows.push(escapedRow.join(','));
+        });
+    });
+    
+    if (csvRows.length <= 1) {
+        alert('No release notes found matching the current filters to export.');
+        return;
+    }
+    
+    // Use Blob to handle large file sizes safely
+    const csvContent = "\uFEFF" + csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    let filename = "bigquery_release_notes";
+    if (activeCategory !== 'all') {
+        filename += `_${activeCategory}`;
+    }
+    if (searchQuery) {
+        filename += `_${searchQuery.replace(/[^a-z0-9]/gi, '_')}`;
+    }
+    filename += ".csv";
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
 // Event Listeners
 function setupEventListeners() {
     // Theme toggle
     themeToggle.addEventListener('click', toggleTheme);
     
-    // Tweet button handler (delegated)
+    // Releases container click handler (delegated for tweet and copy card buttons)
     releasesContainer.addEventListener('click', (e) => {
         const tweetBtn = e.target.closest('.tweet-btn');
         if (tweetBtn) {
@@ -373,6 +452,41 @@ function setupEventListeners() {
             const contentEl = updateItem.querySelector('.release-item-content');
             const plainText = contentEl.innerText || contentEl.textContent || '';
             tweetUpdate(date, type, plainText);
+            return;
+        }
+        
+        const copyBtn = e.target.closest('.copy-card-btn');
+        if (copyBtn) {
+            const card = copyBtn.closest('.release-card');
+            const date = card.querySelector('.release-date').innerText.replace(/\s+/g, ' ').trim();
+            const title = card.querySelector('h2').innerText.trim();
+            const updates = card.querySelectorAll('.release-update-item');
+            
+            let copyText = `${title} (${date})\n\n`;
+            updates.forEach(up => {
+                const badge = up.querySelector('.release-item-badge').innerText.trim();
+                const content = up.querySelector('.release-item-content').innerText.replace(/\s+/g, ' ').trim();
+                copyText += `[${badge}] ${content}\n\n`;
+            });
+            copyText = copyText.trim();
+            
+            navigator.clipboard.writeText(copyText).then(() => {
+                const icon = copyBtn.querySelector('i');
+                const textNode = copyBtn.lastChild;
+                const originalText = textNode.textContent;
+                
+                icon.className = 'fa-solid fa-check';
+                textNode.textContent = ' Copied!';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    icon.className = 'fa-regular fa-copy';
+                    textNode.textContent = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
         }
     });
     
@@ -411,6 +525,9 @@ function setupEventListeners() {
     
     // Refresh Button
     refreshBtn.addEventListener('click', fetchReleases);
+    
+    // Export CSV Button
+    exportCsvBtn.addEventListener('click', exportToCSV);
     
     // Retry Button
     retryBtn.addEventListener('click', fetchReleases);
